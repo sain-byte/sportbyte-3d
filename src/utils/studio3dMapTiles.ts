@@ -303,17 +303,8 @@ export function drawLoadingTileGrid(
   const w = canvas.width;
   const h = canvas.height;
   const normalized = normalizeMapStyle3D(style);
-  const isDark =
-    style === 'night' || normalized === 'satellite' || normalized === 'hybrid';
-  const bg = isDark
-    ? '#0F172A'
-    : normalized === 'monochrome'
-      ? '#E2E8F0'
-      : normalized === 'liberty'
-        ? '#F4F0E8'
-        : normalized === 'city3d'
-          ? '#EEF2F6'
-          : '#E8EDF2';
+  const isDark = normalized === 'satellite' || normalized === 'hybrid';
+  const bg = isDark ? '#0F172A' : '#E8EDF2';
 
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
@@ -359,14 +350,9 @@ export interface TileLoadProgress {
 
 function resolveServerTileStyle(
   style: MapStyle3D,
-  includeLabels = true,
-): CanonicalMapStyle3D | 'night' | 'liberty-nolabels' {
-  if (style === 'night') return 'night';
-  const normalized = normalizeMapStyle3D(style);
-  if (normalized === 'liberty' && !includeLabels) {
-    return 'liberty-nolabels';
-  }
-  return normalized;
+  _includeLabels = true,
+): CanonicalMapStyle3D {
+  return normalizeMapStyle3D(style);
 }
 
 /**
@@ -434,7 +420,7 @@ export async function buildMapCompositeTexture(
   let failedTiles = 0;
   const bustQuery = cacheBust ? `?v=${cacheBust}` : '';
   const serverStyle = resolveServerTileStyle(style, includeLabels);
-  const isMonochrome = serverStyle === 'monochrome';
+  const isMonochrome = false;
   const overlayHybridLabels = serverStyle === 'hybrid' && includeLabels;
   const overlayMonoLabels = isMonochrome && includeLabels;
 
@@ -546,8 +532,8 @@ export function computeTerrainSurfaceDetailPixels(
   const bumpRgba = new Uint8Array(size * size * 4);
   const roughnessRgba = new Uint8Array(size * size * 4);
 
-  const isNatural = normalized === 'terrain' || normalized === 'satellite' || normalized === 'hybrid';
-  const baseRough = isNatural ? 215 : normalized === 'monochrome' ? 228 : 205;
+  const isNatural = normalized === 'satellite' || normalized === 'hybrid';
+  const baseRough = isNatural ? 215 : 205;
   const roughVar = isNatural ? 34 : 20;
 
   for (let y = 0; y < size; y += 1) {
@@ -653,8 +639,8 @@ export function computeTerrainReliefOverlayPixels(
   const lz = -0.48;
 
   const isSatellite = normalized === 'satellite' || normalized === 'hybrid';
-  const isTerrain = normalized === 'terrain';
-  const isMono = normalized === 'monochrome';
+  const isTerrain = false;
+  const isMono = false;
 
   for (let row = 0; row < size; row += 1) {
     const vNorm = row / Math.max(1, size - 1);
@@ -924,7 +910,7 @@ export function buildOsmRoadNetworkGeometry(
 ): THREE.BufferGeometry | null {
   if (roads.length === 0) return null;
 
-  const isLiberty = normalizeMapStyle3D(style) === 'liberty';
+  const isLiberty = false; // liberty vector style removed from 3D raster path
   const positions: number[] = [];
   const normals: number[] = [];
   const colors: number[] = [];
@@ -1021,7 +1007,7 @@ export function buildMergedOsmBuildingsGeometry(
 ): THREE.BufferGeometry | null {
   if (buildings.length === 0) return null;
 
-  const isLiberty = normalizeMapStyle3D(style) === 'liberty';
+  const isLiberty = false; // liberty vector style removed from 3D raster path
   const partGeos: THREE.BufferGeometry[] = [];
   const paletteDay = isLiberty
     ? ['#EDE8DF', '#E5DFD3', '#F3EFE7', '#DFD8CB']

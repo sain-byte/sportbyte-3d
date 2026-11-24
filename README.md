@@ -42,3 +42,13 @@ Serverless proxies under `/api`:
 - `POST /api/map-match` — OSRM foot snap
 
 Default map style is **hybrid** (Esri World Imagery + road labels overlay).
+
+## Mode Navigasi (MapLibre)
+
+Default view after upload: **Navigasi** (MapLibre + OpenFreeMap, no API key).
+
+- Styles: Liberty, Bright (`https://tiles.openfreemap.org/styles/...`)
+- Blue route + moving marker follows playback
+- Toggle **Studio 3D** for the original R3F runner scene
+
+3D basemap styles kept: Hybrid, Satellite, Street only.

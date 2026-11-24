@@ -45,21 +45,9 @@ export type CameraMode3D =
   | 'overview'
   | 'finish-pose';
 export type Camera20mAngle = 'front' | 'back' | 'side' | 'orbit';
-export type CanonicalMapStyle3D =
-  | 'standard'
-  | 'liberty'
-  | 'satellite'
-  | 'terrain'
-  | 'monochrome'
-  | 'hybrid'
-  | 'city3d';
-export type MapStyle3D =
-  | CanonicalMapStyle3D
-  | 'openfreemap'
-  | 'voyager'
-  | 'topo'
-  | 'street'
-  | 'night';
+/** Basemap styles used by the 3D terrain engine (raster via /api/map-tiles). */
+export type CanonicalMapStyle3D = 'standard' | 'satellite' | 'hybrid';
+export type MapStyle3D = CanonicalMapStyle3D | 'street' | 'voyager';
 export type LightingMood3D =
   | 'auto'
   | 'morning'
@@ -172,11 +160,9 @@ export interface OsmRoadWay {
 }
 
 export function normalizeMapStyle3D(style: MapStyle3D): CanonicalMapStyle3D {
-  if (style === 'openfreemap') return 'liberty';
   if (style === 'voyager' || style === 'street') return 'standard';
-  if (style === 'topo') return 'terrain';
-  if (style === 'night') return 'city3d';
-  return style;
+  if (style === 'satellite' || style === 'hybrid' || style === 'standard') return style;
+  return 'hybrid';
 }
 
 export const DEFAULT_RUNNER_CONFIG: RunnerConfig = {

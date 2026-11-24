@@ -755,7 +755,7 @@ export const Studio3DPanelTabs: React.FC<Studio3DPanelTabsProps> = ({
             <section className="space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Peta Dunia Nyata
+                  Basemap 3D (raster)
                 </h3>
                 <button
                   type="button"
@@ -778,13 +778,9 @@ export const Studio3DPanelTabs: React.FC<Studio3DPanelTabsProps> = ({
               <div className="grid grid-cols-2 gap-1.5">
                 {(
                   [
-                    { id: 'standard', label: 'Street' },
-                    { id: 'satellite', label: 'Satellite' },
-                    { id: 'terrain', label: 'Terrain' },
-                    { id: 'monochrome', label: 'Monochrome' },
                     { id: 'hybrid', label: 'Hybrid' },
-                    { id: 'city3d', label: '3D City' },
-                    { id: 'liberty', label: 'Liberty (Vector · OpenFreeMap)' },
+                    { id: 'satellite', label: 'Satellite' },
+                    { id: 'standard', label: 'Street' },
                   ] as Array<{ id: CanonicalMapStyle3D; label: string }>
                 ).map((ms) => {
                   const isActive = normalizeMapStyle3D(mapConfig.mapStyle) === ms.id;
@@ -797,15 +793,9 @@ export const Studio3DPanelTabs: React.FC<Studio3DPanelTabsProps> = ({
                         onChangeMapConfig({
                           ...mapConfig,
                           mapStyle: ms.id,
-                          buildings3d:
-                            ms.id === 'city3d' || ms.id === 'liberty'
-                              ? true
-                              : mapConfig.buildings3d,
                         })
                       }
                       className={`px-3 py-2 rounded-lg border text-xs font-semibold text-left transition-colors cursor-pointer ${
-                        ms.id === 'liberty' ? 'col-span-2' : ''
-                      } ${
                         isActive
                           ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300'
                           : 'border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'

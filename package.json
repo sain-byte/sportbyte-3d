@@ -16,7 +16,8 @@
     "lucide-react": "^0.546.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
-    "three": "^0.187.0"
+    "three": "^0.187.0",
+    "maplibre-gl": "^4.7.1"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",

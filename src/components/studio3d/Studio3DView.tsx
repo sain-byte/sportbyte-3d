@@ -65,6 +65,7 @@ import {
 } from '../../utils/studio3dTrack';
 import type { CustomGlbStatus } from './CustomGlbRunner3D';
 import { Studio3DCanvas } from './Studio3DCanvas';
+import { NavigationMapView, NAV_STYLES, type NavMapStyleId } from './NavigationMapView';
 import { Studio3DPanelTabs, type Studio3DTab } from './Studio3DPanelTabs';
 
 interface Studio3DViewProps {
@@ -111,6 +112,8 @@ export const Studio3DView: React.FC<Studio3DViewProps> = ({
     runnerName: user?.biodata.fullName || user?.username || DEFAULT_RUNNER_CONFIG.runnerName,
   }));
   const [mapConfig, setMapConfig] = useState<MapConfig>(DEFAULT_MAP_CONFIG);
+  const [viewMode, setViewMode] = useState<'3d' | 'nav'>('nav');
+  const [navStyle, setNavStyle] = useState<NavMapStyleId>('liberty');
   const [exportConfig, setExportConfig] = useState<ExportConfig>(DEFAULT_EXPORT_CONFIG);
   const [mapReloadNonce, setMapReloadNonce] = useState(0);
   const [mapLoadStatus, setMapLoadStatus] = useState<MapLoadStatus>(INITIAL_MAP_LOAD_STATUS);
@@ -895,28 +898,95 @@ export const Studio3DView: React.FC<Studio3DViewProps> = ({
               </div>
             ) : (
               <>
-                {/* Live 3D WebGL Canvas */}
+                {/* View mode: Navigasi (MapLibre) or Studio 3D */}
                 <div className="absolute inset-0">
-                  <Studio3DCanvas
-                    track={activeTrack}
-                    runner={runner}
-                    mapConfig={mapConfig}
-                    timelineProgress={progress}
-                    isPlaying={isPlaying || isExporting}
-                    includeFinishPose={exportConfig.includeFinishPose}
-                    currentCadence={liveTelemetry.point.cadence}
-                    currentPaceSec={liveTelemetry.point.paceSecPerKm}
-                    mapReloadNonce={mapReloadNonce}
-                    onMapLoadStatus={setMapLoadStatus}
-                    onCanvasReady={(c) => {
-                      webglCanvasRef.current = c;
-                    }}
-                    onCustomModelStatus={setCustomModelStatus}
-                  />
+                  {viewMode === 'nav' ? (
+                    <NavigationMapView
+                      track={activeTrack}
+                      progress={progress}
+                      isPlaying={isPlaying}
+                      runnerName={runner.runnerName}
+                      jerseyColor={runner.jerseyColor}
+                      navStyle={navStyle}
+                    />
+                  ) : (
+                    <Studio3DCanvas
+                      track={activeTrack}
+                      runner={runner}
+                      mapConfig={mapConfig}
+                      timelineProgress={progress}
+                      isPlaying={isPlaying || isExporting}
+                      includeFinishPose={exportConfig.includeFinishPose}
+                      currentCadence={liveTelemetry.point.cadence}
+                      currentPaceSec={liveTelemetry.point.paceSecPerKm}
+                      mapReloadNonce={mapReloadNonce}
+                      onMapLoadStatus={setMapLoadStatus}
+                      onCanvasReady={(c) => {
+                        webglCanvasRef.current = c;
+                      }}
+                      onCustomModelStatus={setCustomModelStatus}
+                    />
+                  )}
                 </div>
 
-                {/* Subtle real-tile loading progress badge inside preview when fetching tiles */}
-                {isMapLoading && (
+                {/* View mode toggle */}
+                <div className="absolute top-3 left-3 z-30 flex flex-col gap-1.5">
+                  <div
+                    className="inline-flex rounded-lg border border-slate-200/80 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 shadow-md overflow-hidden"
+                    role="group"
+                    aria-label="Mode tampilan"
+                  >
+                    <button
+                      type="button"
+                      data-testid="studio3d-mode-nav"
+                      onClick={() => setViewMode('nav')}
+                      className={`h-8 px-3 text-[11px] font-bold transition-colors cursor-pointer ${
+                        viewMode === 'nav'
+                          ? 'bg-blue-600 text-white'
+                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      Navigasi
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="studio3d-mode-3d"
+                      onClick={() => setViewMode('3d')}
+                      className={`h-8 px-3 text-[11px] font-bold transition-colors cursor-pointer ${
+                        viewMode === '3d'
+                          ? 'bg-blue-600 text-white'
+                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      Studio 3D
+                    </button>
+                  </div>
+                  {viewMode === 'nav' && (
+                    <div
+                      className="inline-flex rounded-lg border border-slate-200/80 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95 shadow-md overflow-hidden"
+                      role="group"
+                      aria-label="Style peta navigasi"
+                    >
+                      {(Object.keys(NAV_STYLES) as NavMapStyleId[]).map((id) => (
+                        <button
+                          key={id}
+                          type="button"
+                          onClick={() => setNavStyle(id)}
+                          className={`h-7 px-2.5 text-[10px] font-semibold transition-colors cursor-pointer ${
+                            navStyle === id
+                              ? 'bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900'
+                              : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          {NAV_STYLES[id].label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 3D tile loading badge */}
+                {viewMode === '3d' && isMapLoading && (
                   <div className="pointer-events-none absolute bottom-[168px] right-3 z-20 rounded-md bg-slate-950/85 border border-white/15 px-2 py-1 font-mono-tabular text-[10px] font-semibold text-amber-200 flex items-center gap-1.5">
                     <RefreshCw className="w-3 h-3 animate-spin" aria-hidden="true" />
                     <span>

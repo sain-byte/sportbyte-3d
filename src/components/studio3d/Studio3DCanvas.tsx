@@ -61,11 +61,8 @@ function resolveLightingMood(
   mapStyle: MapConfig['mapStyle'],
 ): Exclude<LightingMood3D, 'auto'> {
   if (mood !== 'auto') return mood;
-  if (mapStyle === 'night') return 'night-run';
   const normalized = normalizeMapStyle3D(mapStyle);
-  if (normalized === 'terrain') return 'mountain';
   if (normalized === 'satellite' || normalized === 'hybrid') return 'morning';
-  if (normalized === 'liberty') return 'city-park';
   return 'city-park';
 }
 
