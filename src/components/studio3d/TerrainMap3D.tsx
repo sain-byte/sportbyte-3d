@@ -204,14 +204,12 @@ export const TerrainMap3D: React.FC<TerrainMap3DProps> = ({
   const normalizedStyle = normalizeMapStyle3D(mapStyle);
   const isNight = resolvedMood === 'night' || resolvedMood === 'night-run';
   const isEvening = resolvedMood === 'evening';
-  const showOsmBuildings = buildings3d || normalizedStyle === 'city3d';
+  const showOsmBuildings = buildings3d;
+  // All canonical basemaps support the OSM road overlay.
   const showOsmRoads =
     normalizedStyle === 'standard' ||
-    normalizedStyle === 'liberty' ||
-    normalizedStyle === 'city3d' ||
-    normalizedStyle === 'terrain' ||
-    normalizedStyle === 'hybrid' ||
-    normalizedStyle === 'monochrome';
+    normalizedStyle === 'satellite' ||
+    normalizedStyle === 'hybrid';
 
   // Align Mercator tile box center strictly with track local meter coordinates
   const { gridCenterX, gridCenterZ } = useMemo(() => {
@@ -503,17 +501,15 @@ export const TerrainMap3D: React.FC<TerrainMap3DProps> = ({
           map={mapTexture}
           bumpMap={overlaySurface ? surfaceMaps.bumpMap : null}
           bumpScale={
-            normalizedStyle === 'terrain'
-              ? 0.45
-              : normalizedStyle === 'satellite' || normalizedStyle === 'hybrid'
-                ? 0.3
-                : 0.16
+            normalizedStyle === 'satellite' || normalizedStyle === 'hybrid'
+              ? 0.3
+              : 0.16
           }
           roughnessMap={overlaySurface ? surfaceMaps.roughnessMap : null}
           roughness={overlaySurface ? 0.98 : 0.96}
           metalness={0.0}
           envMapIntensity={0.14}
-          color={isNight && mapStyle !== 'night' ? '#7B8CA6' : '#FFFFFF'}
+          color={isNight ? '#7B8CA6' : '#FFFFFF'}
         />
       </mesh>
 
@@ -544,20 +540,8 @@ export const TerrainMap3D: React.FC<TerrainMap3DProps> = ({
             vertexColors
             roughness={0.88}
             metalness={0.02}
-            transparent={
-              normalizedStyle === 'terrain' ||
-              normalizedStyle === 'hybrid' ||
-              normalizedStyle === 'monochrome'
-            }
-            opacity={
-              normalizedStyle === 'hybrid'
-                ? 0.42
-                : normalizedStyle === 'terrain'
-                  ? 0.52
-                  : normalizedStyle === 'monochrome'
-                    ? 0.65
-                    : 0.78
-            }
+            transparent={normalizedStyle === 'hybrid'}
+            opacity={normalizedStyle === 'hybrid' ? 0.42 : 0.78}
             polygonOffset
             polygonOffsetFactor={-0.5}
           />
@@ -638,7 +622,7 @@ export const TerrainMap3D: React.FC<TerrainMap3DProps> = ({
           landmark={item.landmark}
           position={item.position}
           scaleFactor={landmarkScale}
-          sportByteDarkBadge={isSportByteLime || normalizedStyle === 'liberty'}
+          sportByteDarkBadge={isSportByteLime || normalizedStyle === 'standard'}
         />
       ))}
 

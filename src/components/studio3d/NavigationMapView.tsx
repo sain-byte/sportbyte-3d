@@ -126,7 +126,7 @@ export const NavigationMapView: React.FC<NavigationMapViewProps> = ({
       style: styleUrl,
       center: [track.centerLon, track.centerLat],
       zoom: 14,
-      attributionControl: true,
+      attributionControl: {},
     });
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
