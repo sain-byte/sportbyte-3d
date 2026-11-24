@@ -1,10 +1,31 @@
 export type Language = 'en' | 'id';
 
-const dict = {
+export interface Dictionary {
+  toolbar: {
+    lightMode: string;
+    darkMode: string;
+  };
+  nav: {
+    languageLabel: string;
+  };
+  public3d: {
+    backToHome: string;
+    signInBtn: string;
+    guestUploadHint: string;
+    authLaunchTitle: string;
+    authLaunchSub: string;
+    authLaunchBtn: string;
+  };
+}
+
+const dict: Record<Language, Dictionary> = {
   en: {
     toolbar: {
       lightMode: 'Light mode',
       darkMode: 'Dark mode',
+    },
+    nav: {
+      languageLabel: 'Language',
     },
     public3d: {
       backToHome: 'Back to Home',
@@ -22,6 +43,9 @@ const dict = {
       lightMode: 'Mode Terang',
       darkMode: 'Mode Gelap',
     },
+    nav: {
+      languageLabel: 'Bahasa',
+    },
     public3d: {
       backToHome: 'Kembali ke Beranda',
       signInBtn: 'Buka Aplikasi Utama',
@@ -33,9 +57,7 @@ const dict = {
       authLaunchBtn: 'Buka Studio 3D',
     },
   },
-} as const;
-
-export type Dictionary = (typeof dict)['en'];
+};
 
 export function getTranslations(lang: Language): Dictionary {
   return dict[lang] ?? dict.id;
