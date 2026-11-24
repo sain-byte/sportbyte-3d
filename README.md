@@ -30,3 +30,15 @@ npm run dev
 In the main Sport Byte project, point the Studio 3D button/link to this deployment URL  
 (e.g. `https://sportbyte-3d.vercel.app`).
 
+
+## Map tiles (Vercel)
+
+Serverless proxies under `/api`:
+
+- `GET /api/map-tiles/:style/:z/:x/:y` — OSM / Esri / Carto raster tiles
+- `GET /api/map-elevation` — Open-Meteo DEM
+- `GET /api/map-roads` — Overpass highways
+- `GET /api/map-buildings` — Overpass buildings
+- `POST /api/map-match` — OSRM foot snap
+
+Default map style is **hybrid** (Esri World Imagery + road labels overlay).

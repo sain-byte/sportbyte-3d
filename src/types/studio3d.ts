@@ -203,7 +203,7 @@ export const DEFAULT_MAP_CONFIG: MapConfig = {
   cameraMode: 'auto',
   camera20mAngle: 'back',
   cameraZoom: 1.0,
-  mapStyle: 'standard',
+  mapStyle: 'hybrid',
   buildings3d: true,
   overlayRelief: true,
   overlaySurface: true,
