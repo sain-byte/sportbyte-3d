@@ -786,86 +786,143 @@ export const Studio3DView: React.FC<Studio3DViewProps> = ({
         data-testid="studio3d-preview-stage"
         className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col items-center gap-3.5"
       >
-        {/* Map Status & Explicit Muat Peta Action Bar */}
-        <div className="w-full max-w-[780px] flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-          <div
-            data-testid="studio3d-map-status"
-            className="font-mono-tabular text-[11px] font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2"
-          >
-            <span
-              className={`w-2 h-2 rounded-full shrink-0 ${
-                !track
-                  ? 'bg-slate-400'
-                  : isMapLoading
-                    ? 'bg-amber-500'
-                    : mapLoadStatus.phase === 'ready'
-                      ? 'bg-emerald-500'
-                      : mapLoadStatus.phase === 'partial'
-                        ? 'bg-amber-500'
-                        : 'bg-rose-500'
-              }`}
-            />
-            <span>
-              {!track
-                ? 'Menunggu file .FIT / .GPX atau riwayat lari GPS'
-                : isMapLoading
-                  ? `Memuat Peta Asli ${mapLoadStatus.loadedTiles}/${mapLoadStatus.totalTiles} (z${mapLoadStatus.zoom})...`
-                  : mapLoadStatus.phase === 'ready'
-                    ? `Peta Asli z${mapLoadStatus.zoom} · ${mapLoadStatus.loadedTiles}/${mapLoadStatus.totalTiles} tile`
-                    : mapLoadStatus.phase === 'partial'
-                      ? `Peta Parsial ${mapLoadStatus.loadedTiles}/${mapLoadStatus.totalTiles} (${mapLoadStatus.failedTiles} gagal)`
-                      : 'Peta gagal dimuat · coba Muat Peta'}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <select
-              aria-label="Layer Peta 3D"
-              data-testid="studio3d-quick-mapstyle"
-              value={normalizeMapStyle3D(mapConfig.mapStyle)}
-              onChange={(e) => {
-                const nextStyle = e.target.value as CanonicalMapStyle3D;
-                setMapConfig((prev) => ({
-                  ...prev,
-                  mapStyle: nextStyle,
-                  buildings3d:
-                    nextStyle === 'city3d' || nextStyle === 'liberty' ? true : prev.buildings3d,
-                }));
-              }}
-              className="h-7 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-[11px] font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+        {/* Mode + status bar */}
+        <div className="w-full max-w-[780px] flex flex-col gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div
+              className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 p-0.5"
+              role="group"
+              aria-label="Mode tampilan"
             >
-              <option value="standard">Peta: Street</option>
-              <option value="liberty">Peta: Liberty (OpenFreeMap)</option>
-              <option value="satellite">Peta: Satellite</option>
-              <option value="terrain">Peta: Terrain</option>
-              <option value="monochrome">Peta: Monochrome</option>
-              <option value="hybrid">Peta: Hybrid</option>
-              <option value="city3d">Peta: 3D City</option>
-            </select>
-
-            <button
-              type="button"
-              data-testid="studio3d-reload-map-btn"
-              disabled={!track}
-              onClick={handleReloadMap}
-              className="h-7 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-slate-800 dark:text-slate-100 text-[11px] font-semibold inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors cursor-pointer"
-            >
-              <RefreshCw
-                className={`w-3 h-3 text-blue-600 dark:text-blue-400 ${
-                  track && isMapLoading ? 'animate-spin' : ''
+              <button
+                type="button"
+                data-testid="studio3d-mode-nav-bar"
+                onClick={() => setViewMode('nav')}
+                className={`h-8 px-3.5 text-xs font-bold rounded-md transition-colors cursor-pointer ${
+                  viewMode === 'nav'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                 }`}
-                aria-hidden="true"
+              >
+                Navigasi (MapLibre)
+              </button>
+              <button
+                type="button"
+                data-testid="studio3d-mode-3d-bar"
+                onClick={() => setViewMode('3d')}
+                className={`h-8 px-3.5 text-xs font-bold rounded-md transition-colors cursor-pointer ${
+                  viewMode === '3d'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                Studio 3D
+              </button>
+            </div>
+
+            <div
+              data-testid="studio3d-map-status"
+              className="font-mono-tabular text-[11px] font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2"
+            >
+              <span
+                className={`w-2 h-2 rounded-full shrink-0 ${
+                  !track
+                    ? 'bg-slate-400'
+                    : viewMode === 'nav'
+                      ? 'bg-emerald-500'
+                      : isMapLoading
+                        ? 'bg-amber-500'
+                        : mapLoadStatus.phase === 'ready'
+                          ? 'bg-emerald-500'
+                          : mapLoadStatus.phase === 'partial'
+                            ? 'bg-amber-500'
+                            : 'bg-rose-500'
+                }`}
               />
-              <span>{track && isMapLoading ? 'Memuat Peta...' : 'Muat Peta'}</span>
-            </button>
+              <span>
+                {!track
+                  ? 'Upload .FIT / .GPX untuk mulai'
+                  : viewMode === 'nav'
+                    ? `Navigasi · OpenFreeMap (${navStyle}) · tanpa API key`
+                    : isMapLoading
+                      ? `3D tile ${mapLoadStatus.loadedTiles}/${mapLoadStatus.totalTiles} (z${mapLoadStatus.zoom})...`
+                      : mapLoadStatus.phase === 'ready'
+                        ? `3D basemap z${mapLoadStatus.zoom} siap`
+                        : mapLoadStatus.phase === 'partial'
+                          ? `3D parsial ${mapLoadStatus.loadedTiles}/${mapLoadStatus.totalTiles}`
+                          : 'Basemap 3D gagal · coba Muat ulang (mode 3D saja)'}
+              </span>
+            </div>
           </div>
+
+          {viewMode === 'nav' ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                Style navigasi
+              </span>
+              {(Object.keys(NAV_STYLES) as NavMapStyleId[]).map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setNavStyle(id)}
+                  className={`h-7 px-2.5 rounded-lg border text-[11px] font-semibold cursor-pointer transition-colors ${
+                    navStyle === id
+                      ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300'
+                      : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {NAV_STYLES[id].label}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-2">
+              <select
+                aria-label="Basemap 3D"
+                data-testid="studio3d-quick-mapstyle"
+                value={normalizeMapStyle3D(mapConfig.mapStyle)}
+                onChange={(e) => {
+                  const nextStyle = e.target.value as CanonicalMapStyle3D;
+                  setMapConfig((prev) => ({ ...prev, mapStyle: nextStyle }));
+                }}
+                className="h-7 px-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 text-[11px] font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+              >
+                <option value="hybrid">3D: Hybrid</option>
+                <option value="satellite">3D: Satellite</option>
+                <option value="standard">3D: Street</option>
+              </select>
+              <button
+                type="button"
+                data-testid="studio3d-reload-map-btn"
+                disabled={!track}
+                onClick={handleReloadMap}
+                className="h-7 px-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-slate-800 dark:text-slate-100 text-[11px] font-semibold inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors cursor-pointer"
+              >
+                <RefreshCw
+                  className={`w-3 h-3 text-blue-600 dark:text-blue-400 ${
+                    track && isMapLoading ? 'animate-spin' : ''
+                  }`}
+                  aria-hidden="true"
+                />
+                <span>{track && isMapLoading ? 'Memuat...' : 'Muat ulang 3D'}</span>
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Phone Hardware Frame (Strict 9:16 Aspect Ratio centered at Top) */}
-        <div className="w-full max-w-[350px] sm:max-w-[370px] rounded-[36px] p-2.5 bg-slate-900 dark:bg-slate-800 border-4 border-slate-800 dark:border-slate-700 shadow-2xl">
+        {/* Preview frame: wider landscape-ish for Navigasi, phone 9:16 for Studio 3D */}
+        <div
+          className={`w-full rounded-[36px] p-2.5 bg-slate-900 dark:bg-slate-800 border-4 border-slate-800 dark:border-slate-700 shadow-2xl ${
+            viewMode === 'nav'
+              ? 'max-w-[780px]'
+              : 'max-w-[350px] sm:max-w-[370px]'
+          }`}
+        >
           <div
             data-testid="studio3d-phone-screen"
-            className="relative w-full aspect-[9/16] rounded-[26px] overflow-hidden bg-slate-950 select-none"
+            className={`relative w-full rounded-[26px] overflow-hidden bg-slate-950 select-none ${
+              viewMode === 'nav' ? 'aspect-[16/10] min-h-[320px]' : 'aspect-[9/16]'
+            }`}
           >
             {/* Dynamic Island */}
             <div className="pointer-events-none absolute top-2 left-1/2 -translate-x-1/2 w-20 h-4 rounded-full bg-slate-950/90 border border-white/10 z-20" />

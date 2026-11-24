@@ -452,6 +452,45 @@ export async function buildMapCompositeTexture(
     ctx.drawImage(monoScratch, dx, dy, tileSize, tileSize);
   };
 
+
+/** Direct upstream tile URLs (browser CORS). Used when /api/map-tiles is unavailable. */
+function directTileCandidates(
+  style: CanonicalMapStyle3D,
+  z: number,
+  x: number,
+  y: number,
+): string[] {
+  const sub = ['a', 'b', 'c'][(x + y) % 3];
+  if (style === 'satellite' || style === 'hybrid') {
+    return [
+      `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`,
+    ];
+  }
+  // standard / street-like
+  return [
+    `https://${sub}.basemaps.cartocdn.com/rastertiles/voyager/${z}/${x}/${y}.png`,
+    `https://${sub}.tile.openstreetmap.org/${z}/${x}/${y}.png`,
+    `https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/${z}/${y}/${x}`,
+  ];
+}
+
+async function loadTileWithFallback(
+  style: CanonicalMapStyle3D,
+  z: number,
+  x: number,
+  y: number,
+  bustQuery: string,
+): Promise<HTMLImageElement | null> {
+  const apiUrl = `/api/map-tiles/${style}/${z}/${x}/${y}${bustQuery}`;
+  const fromApi = await loadTileImage(apiUrl);
+  if (fromApi) return fromApi;
+  for (const url of directTileCandidates(style, z, x, y)) {
+    const img = await loadTileImage(url);
+    if (img) return img;
+  }
+  return null;
+}
+
   const completion = (async () => {
     const batchSize = 6;
     for (let i = 0; i < jobs.length; i += batchSize) {
@@ -460,8 +499,12 @@ export async function buildMapCompositeTexture(
       await Promise.all(
         batch.map(async (job) => {
           if (signal?.aborted) return;
-          const baseImg = await loadTileImage(
-            `/api/map-tiles/${serverStyle}/${grid.zoom}/${job.tx}/${job.ty}${bustQuery}`,
+          const baseImg = await loadTileWithFallback(
+            normalizeMapStyle3D(serverStyle as MapStyle3D),
+            grid.zoom,
+            job.tx,
+            job.ty,
+            bustQuery,
           );
           if (signal?.aborted) return;
 
